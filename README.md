@@ -1,16 +1,23 @@
-# Invirtus — Bottoms-Up Market Sizing
+# Invirtus — Bottoms-Up Revenue Potential
 
-A working Excel model that derives **TAM / SAM / SOM** for Invirtus from the
-count of target buyers × realistic usage-based revenue (tests run × net price
-per test) — **not** a top-down slice of a published HR-tech number.
+A working Excel model that derives Invirtus's **revenue potential** (TAM / SAM /
+SOM equivalents) from the count of target buyers × realistic usage-based revenue
+— **not** a top-down slice of a published HR-tech number. Two revenue streams:
+**assessment packs** + **talent-DB monetization**.
 
 ## The answer (base case, USD)
 
-| Ring | Value | Basis |
-|------|-------|-------|
-| **TAM** | **~$640M** | 3 buyer segments across all geos where the product works, full ACV (focus-6 grossed up by focus-6 share of the global universe). |
-| **SAM** | **~$77M** | Focus-6 geos (France, UK, UAE, Morocco, KSA, Egypt), segments serviceable today. |
-| **SOM (Yr 3)** | **~$1.34M** | Reachable in 3 years. **Channel-led (~59%)**: Manatal embedded attach, then direct self-serve/sales (~41%). Ties to the finalized BP (between its 2028 and 2029 test-pack revenue). |
+| Tier | Assessments | + Talent-DB | **Total revenue potential** |
+|------|-------------|-------------|------------------------------|
+| **Full opportunity** (TAM) | ~$640M | ~$471M | **~$1.11B** |
+| **Serviceable today** (SAM) | ~$77M | ~$56M | **~$133M** |
+| **3-year reachable** (SOM) | ~$1.34M | ~$0.99M | **~$2.34M** |
+
+- **Full opportunity** — 3 buyer segments, all geos where the product works, full ACV.
+- **Serviceable today** — focus-6 geos (France, UK, UAE, Morocco, KSA, Egypt).
+- **3-year reachable** — **assessment line is channel-led (~59% Manatal / ~41% direct)**;
+  ties to the finalized BP (between its 2028 and 2029 test-pack revenue). Talent-DB
+  adds ~42% on top, consistent with the BP reaching ~45% DB revenue by 2030.
 
 > Pricing aligned to Aida's **finalized, pack-led business plan**: $14 base/test;
 > packs PAYG / Small (20, −10%) / Medium (100, −15%) / **Enterprise (1,000, −20% = $11,200)**;
@@ -45,6 +52,10 @@ $15 PAYG price are the next two swing factors (see Sensitivity).
   ACV × retention. Direct = penetration of the serviceable SAM (captures that share
   of segment-weighted SAM value), cross-checked against a traffic→trial→paid funnel
   with deliberately low trial-to-paid.
+- **Second stream — talent-DB monetization:** for each tier,
+  `DB revenue = tests run × % profiles sourced from own DB × $30/profile`
+  (mature 30% used; finalized BP ramps 1%→50%). Total revenue potential =
+  assessments + talent-DB.
 
 ## Conventions (financial-modeling skill)
 

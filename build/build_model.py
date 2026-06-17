@@ -301,6 +301,13 @@ put("TESTS_PER_HIRE", "Tests run per hire placed", 6, "tests", NUM,
 put("MITIGATION", "Bad-hire rate reduction from structured eval", 0.20, "%", PCT0,
     "Assumed share of bad-hire cost avoided via better screening.")
 
+# ---- Section 11: talent-DB monetization (2nd revenue stream) ----
+band(A, row, "11. Talent-DB monetization  (2nd revenue stream)  [finalized BP]"); row += 1
+put("PCT_FROM_DB", "Profiles sourced from own DB (mature)", 0.30, "%", PCT,
+    "Finalized BP ramps 1% (2026) -> 50% (2030); 30% used as mature steady-state. Profiles sourced = tests run x this %.", src="S7")
+put("PRICE_PROFILE", "Avg price per sourced profile", 30, "$", USD,
+    "Finalized BP: $30 per sourced profile, flat.", src="S7")
+
 ASSUM_LAST = row
 
 # ============================================================================
@@ -323,8 +330,8 @@ def bsec(r, text, c1=2, c2=8):
     for c in range(c1, c2+1):
         B.cell(r, c).fill = fill_sec
 
-B.cell(br,2,"INVIRTUS  -  TAM / SAM / SOM build").font = f_title; br += 1
-B.cell(br,2,"Bottoms-up: entities x %fit x tests/yr x net $/test. USD. All drivers live on Assumptions.").font = f_sub
+B.cell(br,2,"INVIRTUS  -  Revenue potential build  (TAM / SAM / SOM)").font = f_title; br += 1
+B.cell(br,2,"Bottoms-up: entities x %fit x tests/yr x net $/test, plus talent-DB stream. USD. All drivers live on Assumptions.").font = f_sub
 B.merge_cells(start_row=br,start_column=2,end_row=br,end_column=8); br += 2
 
 # ---------- Serviceable accounts by segment (focus-6) ----------
@@ -443,8 +450,31 @@ SOM_CH=f"Build!$E${CH_REV}"; SOM_DIR=f"Build!$E${D_REV}"
 SOM_ACCT_TOT=f"(Build!$E${CH_ACCT}+Build!$E${D_ACCT})"
 br+=2
 
+# ---------- two revenue streams & total revenue potential ----------
+bband(br, "D.  Revenue potential by stream  (assessments + talent-DB)"); br+=1
+for i,h in enumerate(["Tier","Assessment rev ($/yr)","Tests run / yr","Talent-DB rev ($/yr)","TOTAL revenue potential ($/yr)"]):
+    cell=B.cell(br,2+i,h); cell.font=f_h2; cell.fill=fill_sec; cell.alignment=center
+br+=1
+tot_cells={}
+for tier,assess_ref in [("Full opportunity (TAM)",TAM_VAL),("Serviceable today (SAM)",SAM_VAL),("3-yr reachable (SOM)",SOM_VAL)]:
+    B.cell(br,2,tier).font=f_label
+    B.cell(br,3,f"={assess_ref}").number_format=USD
+    B.cell(br,4,f"=C{br}/{ref['BLEND']}").number_format=NUM                       # tests = assess rev / blended price
+    B.cell(br,5,f"=D{br}*{ref['PCT_FROM_DB']}*{ref['PRICE_PROFILE']}").number_format=USD  # DB = tests x %fromDB x price
+    B.cell(br,6,f"=C{br}+E{br}").number_format=USD
+    for c in range(3,7): B.cell(br,c).font=f_calc
+    B.cell(br,6).font=f_calcb
+    tot_cells[tier]=br
+    br+=1
+TOT_TAM=f"Build!$F${tot_cells['Full opportunity (TAM)']}"
+TOT_SAM=f"Build!$F${tot_cells['Serviceable today (SAM)']}"
+TOT_SOM=f"Build!$F${tot_cells['3-yr reachable (SOM)']}"
+ASSESS_SOM=f"Build!$C${tot_cells['3-yr reachable (SOM)']}"
+DB_SOM=f"Build!$E${tot_cells['3-yr reachable (SOM)']}"
+br+=1
+
 # ---------- value-delivered parallel read ----------
-bband(br, "D.  Value delivered  (tests run -> hires -> bad-hire cost addressed)"); br+=1
+bband(br, "E.  Value delivered  (tests run -> hires -> bad-hire cost addressed)"); br+=1
 for i,h in enumerate(["Ring","Accounts","Tests run / yr","Hires supported / yr","Bad-hire $ exposure influenced","Mitigable value to buyers ($)"]):
     cell=B.cell(br,2+i,h); cell.font=f_h2; cell.fill=fill_sec; cell.alignment=center
 br+=1
@@ -472,7 +502,7 @@ for col,w in [("A",3),("B",30),("C",22),("D",22),("E",22),("F",6)]:
     C.column_dimensions[col].width=w
 cr=2
 C.cell(cr,2,"INVIRTUS").font=Font(name="Calibri",size=30,bold=True,color="FF1F2A44"); cr+=1
-C.cell(cr,2,"Bottoms-Up Market Sizing  -  TAM / SAM / SOM").font=Font(name="Calibri",size=14,color=GREY); cr+=1
+C.cell(cr,2,"Bottoms-Up Revenue Potential  (two streams; TAM / SAM / SOM equivalents)").font=Font(name="Calibri",size=14,color=GREY); cr+=1
 C.cell(cr,2,"Candidate assessment platform  -  decision intelligence layer above the ATS  |  USD  |  Built 2026-06-16").font=f_note; cr+=2
 
 # one-line answer band
@@ -481,32 +511,42 @@ for c in range(2,6): C.cell(cr,c).fill=fill_h1
 cr+=1
 C.merge_cells(start_row=cr,start_column=2,end_row=cr+2,end_column=5)
 C.cell(cr,2,(
- "Lead with SOM. Reachable 3-year revenue is driven first by the Manatal channel "
- "(embedded attach ~56% of SOM), then self-serve. The single biggest assumption is the "
- "Year-3 channel attach rate on the ICP-relevant Manatal base (Assumptions sec. 7). "
- "Tests/account and the $14 PAYG price are the next two swing factors (see Sensitivity).")).font=Font(name="Calibri",size=11,color="FF1F2A44")
+ "Lead with the 3-year reachable number. It runs on two streams - assessment packs "
+ "plus talent-DB monetization - and is driven first by the Manatal channel (embedded "
+ "attach ~59% of the assessment line), then self-serve. The single biggest assumption "
+ "is the Year-3 channel attach rate on the ICP-relevant Manatal base (Assumptions sec. 7); "
+ "tests/account and the $14 PAYG price are the next two swing factors (see Sensitivity).")).font=Font(name="Calibri",size=11,color="FF1F2A44")
 C.cell(cr,2).alignment=left
 C.cell(cr,2).fill=fill_cov
 for r in range(cr,cr+3):
     for c in range(2,6): C.cell(r,c).fill=fill_cov
 cr+=4
 
-# the three cards
-C.cell(cr,2,"TAM").font=f_biglbl
-C.cell(cr,3,"SAM").font=f_biglbl
-C.cell(cr,4,"SOM (Yr 3)").font=f_biglbl
+# the three cards = TOTAL revenue potential (assessments + talent-DB)
+C.cell(cr,2,"FULL OPPORTUNITY").font=f_biglbl
+C.cell(cr,3,"SERVICEABLE TODAY").font=f_biglbl
+C.cell(cr,4,"3-YEAR REACHABLE").font=f_biglbl
 cr+=1
-C.cell(cr,2,f"={TAM_VAL}").number_format=USDB; C.cell(cr,2).font=f_big
-C.cell(cr,3,f"={SAM_VAL}").number_format=USDB; C.cell(cr,3).font=f_big
-C.cell(cr,4,f"={SOM_VAL}").number_format=USDM; C.cell(cr,4).font=f_big
+C.cell(cr,2,f"={TOT_TAM}").number_format=USDB; C.cell(cr,2).font=f_big
+C.cell(cr,3,f"={TOT_SAM}").number_format=USDM; C.cell(cr,3).font=f_big
+C.cell(cr,4,f"={TOT_SOM}").number_format=USDM; C.cell(cr,4).font=f_big
 cr+=1
-C.cell(cr,2,"Global prize, full ACV").font=f_note
-C.cell(cr,3,"Focus-6, serviceable today").font=f_note
-C.cell(cr,4,"Channel + direct, retention-adj").font=f_note
+C.cell(cr,2,"(TAM) all geos | 2 streams").font=f_note
+C.cell(cr,3,"(SAM) focus-6 | serviceable").font=f_note
+C.cell(cr,4,"(SOM) channel+direct | 3-yr").font=f_note
 cr+=2
 
-# SOM split
-C.cell(cr,2,"SOM split").font=f_h2; cr+=1
+# 3-yr reachable by stream
+C.cell(cr,2,"3-yr reachable - by revenue stream").font=f_h2; cr+=1
+C.cell(cr,2,"Assessment packs").font=f_label
+C.cell(cr,3,f"={ASSESS_SOM}").number_format=USDM; C.cell(cr,3).font=f_calcb; cr+=1
+C.cell(cr,2,"Talent-DB monetization").font=f_label
+C.cell(cr,3,f"={DB_SOM}").number_format=USDM; C.cell(cr,3).font=f_calcb; cr+=1
+C.cell(cr,2,"Total revenue potential").font=f_calcb
+C.cell(cr,3,f"={TOT_SOM}").number_format=USDM; C.cell(cr,3).font=f_calcb; cr+=2
+
+# 3-yr reachable assessments by route
+C.cell(cr,2,"3-yr reachable - assessments by route").font=f_h2; cr+=1
 C.cell(cr,2,"Channel (Manatal)").font=f_label
 C.cell(cr,3,f"={SOM_CH}").number_format=USDM; C.cell(cr,3).font=f_calcb; cr+=1
 C.cell(cr,2,"Direct (self-serve + sales)").font=f_label
