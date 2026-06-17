@@ -203,34 +203,32 @@ put("FIT_MS", "Mid-size firms - % fit use case", 0.25, "%", PCT,
 
 # ---- Section 3: pricing & packs ----
 band(A, row, "3.  Pricing  (usage-based: $/test, packs)  [given]"); row += 1
-put("P_PAYG", "PAYG base price per test", 15.00, "$/test", USD2,
-    "Given. Benchmark: TestGorilla ~$4.3/candidate (Core), TestDome $7-20, HackerRank $15-20, Adaface entry $15. $15 sits at premium end.", src="S7")
+put("P_PAYG", "PAYG base price per test", 14.00, "$/test", USD2,
+    "Finalized BP base (was $15). Benchmark: TestGorilla ~$4.3/candidate, TestDome $7-20, HackerRank $15-20, Adaface entry $15. $14 sits at premium end.", src="S7")
 put("D_S", "Small pack discount (20 tests)", 0.10, "%", PCT0, "Given.")
 put("D_M", "Medium pack discount (100 tests)", 0.15, "%", PCT0, "Given.")
-put("D_L", "Large pack discount (200 tests)", 0.20, "%", PCT0, "Given.")
+put("D_L", "Enterprise pack discount (1,000 tests)", 0.20, "%", PCT0,
+    "Finalized BP top tier: 1,000-test Enterprise pack at $11,200 (= $11.20/test). Replaces old 200-unit Large and the flat enterprise fee.")
 # net prices (calc)
 put("NP_PAYG", "   Net price - PAYG", f"={ref['P_PAYG']}", "$/test", USD2, "", is_input=False)
 put("NP_S", "   Net price - Small", f"={ref['P_PAYG']}*(1-{ref['D_S']})", "$/test", USD2, "", is_input=False)
 put("NP_M", "   Net price - Medium", f"={ref['P_PAYG']}*(1-{ref['D_M']})", "$/test", USD2, "", is_input=False)
-put("NP_L", "   Net price - Large", f"={ref['P_PAYG']}*(1-{ref['D_L']})", "$/test", USD2, "", is_input=False)
+put("NP_L", "   Net price - Enterprise (1,000-pack)", f"={ref['P_PAYG']}*(1-{ref['D_L']})", "$/test", USD2, "", is_input=False)
 
 # ---- Section 4: pack mix ----
-band(A, row, "4.  Pack mix  (share of accounts on each plan)"); row += 1
-put("MIX_PAYG", "PAYG share", 0.30, "%", PCT0, "")
-put("MIX_S", "Small pack share", 0.30, "%", PCT0, "")
-put("MIX_M", "Medium pack share", 0.20, "%", PCT0, "")
-put("MIX_L", "Large pack share", 0.15, "%", PCT0, "")
-put("MIX_E", "Enterprise (unlimited) share", 0.05, "%", PCT0, "Larger accounts on a flat custom plan.")
+band(A, row, "4.  Pack mix  (share of accounts on each plan)  [pack-led per finalized BP]"); row += 1
+put("MIX_PAYG", "PAYG share", 0.10, "%", PCT0, "Finalized BP is pack-led; PAYG is a thin trial tier, not the base.")
+put("MIX_S", "Small pack share", 0.35, "%", PCT0, "")
+put("MIX_M", "Medium pack share", 0.35, "%", PCT0, "")
+put("MIX_L", "Enterprise (1,000-pack) share", 0.20, "%", PCT0, "Heaviest buyers; matches finalized BP customer mix.")
 put("MIX_CHK", "   Mix check (=100%)",
-    f"={ref['MIX_PAYG']}+{ref['MIX_S']}+{ref['MIX_M']}+{ref['MIX_L']}+{ref['MIX_E']}",
+    f"={ref['MIX_PAYG']}+{ref['MIX_S']}+{ref['MIX_M']}+{ref['MIX_L']}",
     "%", PCT0, "Must equal 100%.", is_input=False)
-# blended net price across the 4 per-test packs (renormalised, ex-enterprise)
-put("BLEND", "   Blended net price per test (ex-ent)",
+# blended net price across the four per-test packs (all per-test; no flat enterprise fee)
+put("BLEND", "   Blended net price per test",
     f"=({ref['MIX_PAYG']}*{ref['NP_PAYG']}+{ref['MIX_S']}*{ref['NP_S']}+{ref['MIX_M']}*{ref['NP_M']}+{ref['MIX_L']}*{ref['NP_L']})"
     f"/({ref['MIX_PAYG']}+{ref['MIX_S']}+{ref['MIX_M']}+{ref['MIX_L']})",
-    "$/test", USD2, "Mix-weighted net price of the four per-test packs.", is_input=False)
-put("ENT_FEE", "Enterprise flat annual fee", 30000, "$/yr", USD,
-    "Benchmark: Adaface Enterprise $20k, Unlimited $50k. Implies <$12/test above ~2,500 tests/yr.", src="S7")
+    "$/test", USD2, "Mix-weighted net price across all four packs.", is_input=False)
 
 # ---- Section 5: tests-per-account engine ----
 band(A, row, "5.  Tests per account / year  (roles x candidates per role)"); row += 1
@@ -259,8 +257,8 @@ band(A, row, "6.  ACV per account  (revenue/yr)"); row += 1
 for seg, lbl in [("AG","Agencies"),("TF","Eng-heavy firms"),("MS","Mid-size firms"),("CH","Channel acct")]:
     tpa = ref[f"TPA_{seg}"]
     put(f"ACV_{seg}", f"   {lbl} - ACV / account / yr",
-        f"=(1-{ref['MIX_E']})*({tpa}*{ref['BLEND']})+{ref['MIX_E']}*{ref['ENT_FEE']}",
-        "$/yr", USD, "(1-ent%) x tests x blended price + ent% x flat fee.", is_input=False)
+        f"={tpa}*{ref['BLEND']}",
+        "$/yr", USD, "tests/account x blended net price per test.", is_input=False)
 
 # ---- Section 7: channel route (Manatal) ----
 band(A, row, "7.  SOM - Channel route (Manatal embedded)  [anchor 10,000+]"); row += 1
@@ -289,8 +287,8 @@ put("T2P", "Trial -> paid conversion", 0.05, "%", PCT,
 
 # ---- Section 9: retention & TAM scope ----
 band(A, row, "9.  Retention & global scope"); row += 1
-put("RETENTION", "Steady-state annual retention", 0.85, "%", PCT,
-    "100% to date on 3 accounts; model realistic steady-state, not 100%.", src="S8")
+put("RETENTION", "Steady-state annual retention", 0.90, "%", PCT,
+    "Finalized BP assumes 7% gross churn (93% retention); held slightly conservative at 90% for the SOM. 100% to date on a tiny base.", src="S8")
 put("GLOB_SHARE", "Focus-6 share of global addressable universe", 0.12, "%", PCT,
     "Focus-6 as % of all geos where product works. Grosses SAM up to TAM. US/India/rest-EU dominate.")
 
@@ -486,7 +484,7 @@ C.cell(cr,2,(
  "Lead with SOM. Reachable 3-year revenue is driven first by the Manatal channel "
  "(embedded attach ~56% of SOM), then self-serve. The single biggest assumption is the "
  "Year-3 channel attach rate on the ICP-relevant Manatal base (Assumptions sec. 7). "
- "Tests/account and the $15 PAYG price are the next two swing factors (see Sensitivity).")).font=Font(name="Calibri",size=11,color="FF1F2A44")
+ "Tests/account and the $14 PAYG price are the next two swing factors (see Sensitivity).")).font=Font(name="Calibri",size=11,color="FF1F2A44")
 C.cell(cr,2).alignment=left
 C.cell(cr,2).fill=fill_cov
 for r in range(cr,cr+3):
@@ -553,8 +551,8 @@ def blended_of(p):
             f"/({ref['MIX_PAYG']}+{ref['MIX_S']}+{ref['MIX_M']}+{ref['MIX_L']}))")
 
 def acv_of(tpa_expr, p):
-    # ACV per acct: (1-ent)*tests*blend + ent*fee
-    return f"((1-{ref['MIX_E']})*({tpa_expr}*{blended_of(p)})+{ref['MIX_E']}*{ref['ENT_FEE']})"
+    # ACV per acct: tests x blended net price (all per-test packs; no flat fee)
+    return f"({tpa_expr}*{blended_of(p)})"
 
 def som_formula(p_cell, tpa_ch_cell, att_cell):
     """SOM yr3 = channel + direct, parameterised by payg price, channel tests/acct, attach."""
@@ -621,7 +619,7 @@ tornado=[
    som_formula(base_p, base_tpa, "0.04"), som_formula(base_p, base_tpa, base_att), som_formula(base_p, base_tpa, "0.12")),
  ("Channel tests/account (100 / base / 300)",
    som_formula(base_p, "100", base_att), som_formula(base_p, base_tpa, base_att), som_formula(base_p, "300", base_att)),
- ("PAYG price/test ($10 / $15 / $20)",
+ ("PAYG price/test ($10 / base $14 / $20)",
    som_formula("10", base_tpa, base_att), som_formula(base_p, base_tpa, base_att), som_formula("20", base_tpa, base_att)),
 ]
 for lbl,lo,ba,hi in tornado:
@@ -659,8 +657,8 @@ SOURCES=[
    "argaam.com/en/article/articledetail/id/1709526 ; my.gov.sa/en/news/10102","2026-06-16","Med/High"),
  ("S6","Egypt: tech firms & mid-size","CAPMAS 5th Economic Census; ITIDA Outlook 2026; MAGNiTT",
    "censusinfo.capmas.gov.eg ; itida.gov.eg ; magnitt.com/en-eg/startups","2026-06-16","Med/Low"),
- ("S7","Pricing benchmark ($15/test, ent. fee)","TestGorilla; TestDome; Adaface; HackerRank; Codility pricing",
-   "testgorilla.com/pricing ; testdome.com/pricing ; adaface.com/pricing","2026-06-16","High"),
+ ("S7","Pricing: $14/test + packs (finalized BP); benchmarked","Invirtus finalized BP (Aida); TestGorilla; TestDome; Adaface; HackerRank pricing",
+   "Invirtus_business_plan.xlsx ; testgorilla.com/pricing ; testdome.com/pricing ; adaface.com/pricing","2026-06-17","High"),
  ("S8","Traction: Manatal, retention, value anchor, funnel","Invirtus April 2026 IC Update; GTM notes (34V Notion)",
    "Notion: Invirtus - April 2026 IC Update ; Invirtus - GTM","2026-06-16","Co. data"),
  ("S9","Second ATS (Socium) - upside","Invirtus GTM notes (integration being explored)",
