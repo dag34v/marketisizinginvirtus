@@ -173,15 +173,15 @@ for cidx, t in [(2,"Driver"),(3,"Value"),(4,"Unit"),(5,"Src"),(6,"Logic / flag")
 row += 1
 
 # ---- Section 1: addressable entities by geo & segment ----
-band(A, row, "1.  Addressable entities  (bottoms-up universe)  [RESEARCH]"); row += 1
+band(A, row, "1.  Addressable entities  (researched)"); row += 1
 
 for seg, label, data, note in [
     ("AG", "Tech-focused recruiting agencies", AGENCIES,
-     "Recruitment/staffing firms with a tech/IT desk. Tech subset of national agency base."),
+     "Tech/IT recruitment agencies."),
     ("TF", "Engineering-heavy firms (tech/software/ICT cos.)", TECHFIRMS,
-     "Tech/software/ICT companies that hire engineers in-house."),
+     "Tech/software/ICT companies."),
     ("MS", "Mid-size firms w/ structured tech hiring (50-250)", MIDSIZE,
-     "Medium enterprises x share that run structured engineering hiring."),
+     "Mid-size firms (50-250) hiring engineers."),
 ]:
     secrow(A, row, f"{label}"); row += 1
     for g in GEOS:
@@ -195,23 +195,23 @@ for seg, lbl in [("AG","Agencies"),("TF","Eng-heavy firms"),("MS","Mid-size firm
         "Sum across France, UK, UAE, Morocco, KSA, Egypt.", is_input=False)
 
 # ---- Market breadth toggle (scales the addressable universe) ----
-band(A, row, "1b. Market breadth toggle  (1=Engineers, 2=White-collar, 3=Narrower)"); row += 1
+band(A, row, "1b. Market breadth toggle"); row += 1
 put("BREADTH_MODE", "Active breadth mode (1 / 2 / 3)", 1, "mode", '0',
-    "1: tech/eng focus (current). 2: all structured white-collar hiring (Aida's broader view). 3: narrower high-conviction core.")
-put("BREADTH_NAME", "   Active breadth (label)",
-    f'=CHOOSE({ref["BREADTH_MODE"]},"1 Engineers only","2 White-collar hiring","3 Narrower use case")',
-    "", '@', "Driven by the toggle above.", is_input=False)
-# 3x3 multiplier matrix (segment x mode), written manually
+    "1 engineers only, 2 engineers + select white-collar, 3 all white-collar hiring.")
+put("BREADTH_NAME", "   Active breadth",
+    f'=CHOOSE({ref["BREADTH_MODE"]},"1 Engineers only","2 Some white-collar","3 All white-collar")',
+    "", '@', "", is_input=False)
+# 3x3 multiplier matrix (segment x mode)
 A.cell(row,2,"Breadth multiplier by segment").font=f_h2
-for j,t in [(3,"1 Eng"),(4,"2 White-collar"),(5,"3 Narrower")]:
+for j,t in [(3,"1 Eng"),(4,"2 Some WC"),(5,"3 All WC")]:
     A.cell(row,j,t).font=f_note; A.cell(row,j).alignment=center
-A.cell(row,6,"Logic").font=f_note
+A.cell(row,6,"Notes").font=f_note
 row+=1
 breadth_rows={}
 for seg,lbl,m1,m2,m3,logic in [
-  ("AG","Agencies",1,7,1,"Tech agencies -> all recruitment agencies (tech ~10-15% of total)."),
-  ("TF","Eng-heavy firms",1,4,0.5,"Tech firms -> all firms with structured white-collar hiring."),
-  ("MS","Mid-size firms",1,3,0.2,"Eng-hiring mid-size -> all mid-size structured hirers (2) / core only (3)."),
+  ("AG","Agencies",1,3,7,"Tech agencies are ~10-15% of all recruitment agencies."),
+  ("TF","Eng-heavy firms",1,2,4,"Tech firms to all firms with structured hiring."),
+  ("MS","Mid-size firms",1,1.8,3,"Engineer-hiring to all mid-size hirers."),
 ]:
     A.cell(row,2,f"   {lbl}").font=f_label
     for j,val in [(3,m1),(4,m2),(5,m3)]:
@@ -229,20 +229,20 @@ for seg,lbl in [("AG","Agencies"),("TF","Eng-heavy firms"),("MS","Mid-size firms
 # ---- Section 2: use-case fit ----
 band(A, row, "2.  Share that fits the structured-evaluation use case"); row += 1
 put("FIT_AG", "Agencies - % fit use case", 0.55, "%", PCT,
-    "Tech recruiting agencies run high req volume; structured assessment is core to their value-add. High fit.")
+    "Assessment is core to agency workflow.")
 put("FIT_TF", "Eng-heavy firms - % fit use case", 0.15, "%", PCT,
-    "Broad tech-firm base is ~95% micro (<50 staff, solo dev shops). Only volume hirers run structured multi-candidate evaluation. Deliberately low.")
+    "Base skews micro; only volume hirers fit.")
 put("FIT_MS", "Mid-size firms - % fit use case", 0.25, "%", PCT,
-    "ICP pain (inconsistent evaluation) but lower adoption propensity / hire sporadically. Conservative.")
+    "Lower adoption; hire sporadically.")
 
 # ---- Section 3: pricing & packs ----
-band(A, row, "3.  Pricing  (usage-based: $/test, packs)  [given]"); row += 1
+band(A, row, "3.  Pricing  (usage-based, per test)"); row += 1
 put("P_PAYG", "PAYG base price per test", 14.00, "$/test", USD2,
-    "Finalized BP base (was $15). Benchmark: TestGorilla ~$4.3/candidate, TestDome $7-20, HackerRank $15-20, Adaface entry $15. $14 sits at premium end.", src="S7")
-put("D_S", "Small pack discount (20 tests)", 0.10, "%", PCT0, "Given.")
-put("D_M", "Medium pack discount (100 tests)", 0.15, "%", PCT0, "Given.")
+    "From BP. Premium vs TestGorilla (~$4/candidate); near TestDome/HackerRank.", src="S7")
+put("D_S", "Small pack discount (20 tests)", 0.10, "%", PCT0, "")
+put("D_M", "Medium pack discount (100 tests)", 0.15, "%", PCT0, "")
 put("D_L", "Enterprise pack discount (1,000 tests)", 0.20, "%", PCT0,
-    "Finalized BP top tier: 1,000-test Enterprise pack at $11,200 (= $11.20/test). Replaces old 200-unit Large and the flat enterprise fee.")
+    "1,000-test pack, $11,200 ($11.20/test).")
 # net prices (calc)
 put("NP_PAYG", "   Net price - PAYG", f"={ref['P_PAYG']}", "$/test", USD2, "", is_input=False)
 put("NP_S", "   Net price - Small", f"={ref['P_PAYG']}*(1-{ref['D_S']})", "$/test", USD2, "", is_input=False)
@@ -250,11 +250,11 @@ put("NP_M", "   Net price - Medium", f"={ref['P_PAYG']}*(1-{ref['D_M']})", "$/te
 put("NP_L", "   Net price - Enterprise (1,000-pack)", f"={ref['P_PAYG']}*(1-{ref['D_L']})", "$/test", USD2, "", is_input=False)
 
 # ---- Section 4: pack mix ----
-band(A, row, "4.  Pack mix  (share of accounts on each plan)  [pack-led per finalized BP]"); row += 1
-put("MIX_PAYG", "PAYG share", 0.10, "%", PCT0, "Finalized BP is pack-led; PAYG is a thin trial tier, not the base.")
+band(A, row, "4.  Pack mix"); row += 1
+put("MIX_PAYG", "PAYG share", 0.10, "%", PCT0, "Pack-led mix; PAYG is a thin trial tier.")
 put("MIX_S", "Small pack share", 0.35, "%", PCT0, "")
 put("MIX_M", "Medium pack share", 0.35, "%", PCT0, "")
-put("MIX_L", "Enterprise (1,000-pack) share", 0.20, "%", PCT0, "Heaviest buyers; matches finalized BP customer mix.")
+put("MIX_L", "Enterprise (1,000-pack) share", 0.20, "%", PCT0, "")
 put("MIX_CHK", "   Mix check (=100%)",
     f"={ref['MIX_PAYG']}+{ref['MIX_S']}+{ref['MIX_M']}+{ref['MIX_L']}",
     "%", PCT0, "Must equal 100%.", is_input=False)
@@ -267,21 +267,21 @@ put("BLEND", "   Blended net price per test",
 # ---- Section 5: tests-per-account engine ----
 band(A, row, "5.  Tests per account / year  (roles x candidates per role)"); row += 1
 put("TSCALE", "Tests-per-account scalar (sensitivity handle)", 1.00, "x", '0.00',
-    "Global multiplier on tests/account. Base=1.00; flex in sensitivity.")
+    "Multiplier on tests/account.")
 for seg, lbl, roles, cand, note in [
-    ("AG","Agencies", 80, 6, "High req throughput - many client roles, several candidates screened each."),
-    ("TF","Eng-heavy firms", 25, 6, "Steady in-house eng hiring."),
-    ("MS","Mid-size firms", 10, 5, "Sporadic, lower-volume hiring."),
+    ("AG","Agencies", 80, 6, "High volume across client roles."),
+    ("TF","Eng-heavy firms", 25, 6, "Steady in-house hiring."),
+    ("MS","Mid-size firms", 10, 5, "Lower-volume hiring."),
 ]:
     put(f"ROLE_{seg}", f"   {lbl} - roles hired / yr", roles, "roles", NUM, note)
     put(f"CAND_{seg}", f"   {lbl} - candidates tested / role", cand, "cand", NUM, "")
     put(f"TPA_{seg}", f"   {lbl} - tests / account / yr",
         f"={ref[f'ROLE_{seg}']}*{ref[f'CAND_{seg}']}*{ref['TSCALE']}", "tests", NUM,
-        "roles x candidates x scalar.", is_input=False)
+        "Roles x candidates x scalar.", is_input=False)
 
-# channel-specific tests/account (Manatal users = recruiters, moderate volume)
+# channel-specific tests/account
 put("ROLE_CH", "   Channel acct - roles hired / yr", 40, "roles", NUM,
-    "Manatal users: mix of agencies + in-house recruiters.")
+    "Mix of agencies and in-house recruiters.")
 put("CAND_CH", "   Channel acct - candidates tested / role", 5, "cand", NUM, "")
 put("TPA_CH", "   Channel acct - tests / account / yr",
     f"={ref['ROLE_CH']}*{ref['CAND_CH']}*{ref['TSCALE']}", "tests", NUM, "", is_input=False)
@@ -295,7 +295,7 @@ for seg, lbl in [("AG","Agencies"),("TF","Eng-heavy firms"),("MS","Mid-size firm
         "$/yr", USD, "tests/account x blended net price per test.", is_input=False)
 
 # ---- Section 7: channel route (partner distribution portfolio) ----
-band(A, row, "7.  SOM - Channel: partner distribution portfolio  [beyond Manatal]"); row += 1
+band(A, row, "7.  Channel: partner distribution portfolio"); row += 1
 A.cell(row,2,"Partner  (set On=1 to include)").font=f_h2
 for j,t in [(3,"On 1/0"),(4,"Client base"),(5,"ICP-rel%"),(6,"Attach y3"),(7,"Accounts")]:
     A.cell(row,j,t).font=f_note; A.cell(row,j).alignment=center
@@ -325,40 +325,40 @@ ct.font=f_calcb; ct.number_format=NUM; ct.border=btop
 ref["CH_BASE_ACCTS"]=f"Assumptions!$G${row}"
 row+=1
 put("ATTACH_SCALAR", "Channel attach scalar (sensitivity handle)", 1.00, "x", '0.00',
-    "Global multiplier on all partner attach rates. Base=1.00; flex in sensitivity. (Channel tests/acct & ACV in secs 5-6.)")
+    "Multiplier on all partner attach rates.")
 
 # ---- Section 8: direct route (self-serve + sales) ----
 band(A, row, "8.  SOM - Direct route (self-serve + sales-led)"); row += 1
 put("DIR_PEN_Y3", "3-yr penetration of serviceable SAM accounts", 0.008, "%", PCT,
-    "Direct capture is gated by low trial-to-paid; a pre-seed wins only a thin slice of the large serviceable base.")
+    "Thin slice; gated by low trial-to-paid.")
 put("TRAFFIC", "Monthly website traffic", 8000, "visits/mo", NUM,
-    "Self-serve funnel cross-check input (year-3 run-rate).")
+    "Funnel cross-check (year-3 run-rate).")
 put("TRIAL_CV", "Visit -> free-trial conversion", 0.03, "%", PCT, "")
 put("T2P", "Trial -> paid conversion", 0.05, "%", PCT,
-    "Currently LOW - do NOT assume best-in-class. Flagged in GTM notes.", src="S8")
+    "Low today; not best-in-class.", src="S8")
 
 # ---- Section 9: retention & TAM scope ----
 band(A, row, "9.  Retention & global scope"); row += 1
 put("RETENTION", "Steady-state annual retention", 0.90, "%", PCT,
-    "Finalized BP assumes 7% gross churn (93% retention); held slightly conservative at 90% for the SOM. 100% to date on a tiny base.", src="S8")
+    "BP uses 7% churn; 90% here. 100% to date on a tiny base.", src="S8")
 put("GLOB_SHARE", "Focus-6 share of global addressable universe", 0.12, "%", PCT,
-    "Focus-6 as % of all geos where product works. Grosses SAM up to TAM. US/India/rest-EU dominate.")
+    "Focus-6 as % of global; grosses up to full opportunity.")
 
 # ---- Section 10: value metric ----
 band(A, row, "10. Value delivered  (cost-of-bad-hire anchor)"); row += 1
 put("BADHIRE", "Cost of a bad hire", 150000, "$", USD,
-    "Core value anchor used across sales & fundraising.", src="S8")
+    "Value anchor.", src="S8")
 put("TESTS_PER_HIRE", "Tests run per hire placed", 6, "tests", NUM,
-    "Candidates assessed per filled role (1 hire/role).")
+    "Candidates per hire.")
 put("MITIGATION", "Bad-hire rate reduction from structured eval", 0.20, "%", PCT0,
-    "Assumed share of bad-hire cost avoided via better screening.")
+    "Share of bad-hire cost avoided.")
 
 # ---- Section 11: talent-DB monetization (2nd revenue stream) ----
-band(A, row, "11. Talent-DB monetization  (2nd revenue stream)  [finalized BP]"); row += 1
+band(A, row, "11. Talent-DB monetization  (2nd stream)"); row += 1
 put("PCT_FROM_DB", "Profiles sourced from own DB (mature)", 0.30, "%", PCT,
-    "Finalized BP ramps 1% (2026) -> 50% (2030); 30% used as mature steady-state. Profiles sourced = tests run x this %.", src="S7")
+    "BP ramps 1% to 50%; 30% mature. Profiles = tests x this %.", src="S7")
 put("PRICE_PROFILE", "Avg price per sourced profile", 30, "$", USD,
-    "Finalized BP: $30 per sourced profile, flat.", src="S7")
+    "$30 per profile (BP).", src="S7")
 
 ASSUM_LAST = row
 
@@ -529,7 +529,7 @@ B.cell(br,7,f"=F{br}*{ref['MITIGATION']}").number_format=USD
 for c in range(3,8): B.cell(br,c).font=f_calc
 br+=2
 
-B.cell(br,2,"Notes: (1) MECE - agencies and the firms they serve are distinct buyers; agency tests cover client roles, in-house tests cover own roles, no double count. (2) Channel (Manatal, global) and Direct (focus-6) may overlap modestly; treated as additive (slightly optimistic) and flagged. (3) Value-delivered ring is buyer-side: $ exposure influenced and mitigable value are NOT market size - they show the value pool Invirtus serves, against which the SOM revenue captured (~$2.2M) is a tiny slice. (4) Hires = gross placements assessment touches; agencies place for many clients, so per-account hires run high.").font=f_note
+B.cell(br,2,"Notes: Agencies and the firms they serve are counted separately, so there is no double count. Channel and direct may overlap a little; treated as additive. The value-delivered figures are buyer-side, not market size.").font=f_note
 B.merge_cells(start_row=br,start_column=2,end_row=br+1,end_column=8)
 B.cell(br,2).alignment=left
 
@@ -544,7 +544,7 @@ for col,w in [("A",3),("B",30),("C",22),("D",22),("E",22),("F",6)]:
 cr=2
 C.cell(cr,2,"INVIRTUS").font=Font(name="Calibri",size=30,bold=True,color="FF1F2A44"); cr+=1
 C.cell(cr,2,"Bottoms-Up Revenue Potential  (two streams; TAM / SAM / SOM equivalents)").font=Font(name="Calibri",size=14,color=GREY); cr+=1
-C.cell(cr,2,"Candidate assessment platform  -  decision intelligence layer above the ATS  |  USD  |  Built 2026-06-16").font=f_note; cr+=2
+C.cell(cr,2,"Candidate assessment platform  |  USD  |  June 2026").font=f_note; cr+=2
 
 # one-line answer band
 C.cell(cr,2,"THE ANSWER").font=f_h1
@@ -552,11 +552,9 @@ for c in range(2,6): C.cell(cr,c).fill=fill_h1
 cr+=1
 C.merge_cells(start_row=cr,start_column=2,end_row=cr+2,end_column=5)
 C.cell(cr,2,(
- "Lead with the 3-year reachable number. It runs on two streams - assessment packs "
- "plus talent-DB monetization - and is driven first by the Manatal channel (embedded "
- "attach ~59% of the assessment line), then self-serve. The single biggest assumption "
- "is the Year-3 channel attach rate on the ICP-relevant Manatal base (Assumptions sec. 7); "
- "tests/account and the $14 PAYG price are the next two swing factors (see Sensitivity).")).font=Font(name="Calibri",size=11,color="FF1F2A44")
+ "The 3-year reachable number runs on two streams: assessment packs and talent-DB. "
+ "The assessment line is channel-led (partner portfolio ~76%, direct ~24%). The biggest "
+ "swing is the channel attach scalar, then tests/account and price (see Sensitivity).")).font=Font(name="Calibri",size=11,color="FF1F2A44")
 C.cell(cr,2).alignment=left
 C.cell(cr,2).fill=fill_cov
 for r in range(cr,cr+3):
@@ -603,12 +601,10 @@ C.cell(cr,3,f"={ref['ATTACH_SCALAR']}").number_format='0.00'; C.cell(cr,3).font=
 # read-me / legend
 C.cell(cr,2,"How to read this model").font=f_h2; cr+=1
 for line in [
- "1.  Every blue cell on Assumptions is an editable input; black cells are formulas with no hardcodes.",
- "2.  Market BREADTH toggle (1 Engineers / 2 White-collar / 3 Narrower) scales the universe; the",
- "     headline above reflects the active mode. Channel is a partner PORTFOLIO (Manatal + others), each toggleable.",
- "3.  Build derives Serviceable bottoms-up (entities x %fit x tests/yr x net $/test), grosses up to Full",
- "     opportunity, and captures the 3-yr figure via the partner channel + direct self-serve/sales, two streams.",
- "4.  Sensitivity flexes the inputs that move it most; Sources lists every researched figure.",
+ "1.  Blue cells are inputs; black cells are formulas.",
+ "2.  Breadth toggle (1 engineers / 2 some white-collar / 3 all white-collar) scales the universe.",
+ "3.  Channel is a partner portfolio (Assumptions sec.7); each partner can be switched on or off.",
+ "4.  Two streams: assessment packs + talent-DB. Sources lists the researched inputs.",
 ]:
     C.cell(cr,2,line).font=f_calc
     C.merge_cells(start_row=cr,start_column=2,end_row=cr,end_column=5)

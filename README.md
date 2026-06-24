@@ -27,8 +27,8 @@ tech-only and broader-market views (addresses the "TAM seems low" feedback):
 | Mode | Full opportunity | Serviceable | 3-yr reachable |
 |------|------------------|-------------|----------------|
 | **1 — Engineers only** (current) | ~$1.11B | ~$133M | ~$3.97M |
-| **2 — White-collar hiring** | ~$4.98B | ~$597M | ~$7.31M |
-| **3 — Narrower core** | ~$0.64B | ~$76M | ~$3.56M |
+| **2 — Some white-collar** | ~$2.41B | ~$289M | ~$5.09M |
+| **3 — All white-collar** | ~$4.98B | ~$597M | ~$7.31M |
 
 ### Distribution = partner portfolio (Assumptions §7)
 
