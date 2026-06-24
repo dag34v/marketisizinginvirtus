@@ -19,7 +19,7 @@ target buyers × realistic usage-based revenue
   ties to the finalized BP. Talent-DB adds ~43% on top, consistent with the BP reaching
   ~45% DB revenue by 2030.
 
-### Market-breadth toggle (Assumptions §1b)
+### Market-breadth toggle (Assumptions §2)
 
 The addressable universe scales with a single toggle, so the same model serves the
 tech-only and broader-market views (addresses the "market seems too narrow" feedback):
@@ -30,7 +30,7 @@ tech-only and broader-market views (addresses the "market seems too narrow" feed
 | **2 — Some white-collar** | ~$2.41B | ~$289M | ~$5.09M |
 | **3 — All white-collar** | ~$4.98B | ~$597M | ~$7.31M |
 
-### Distribution = partner portfolio (Assumptions §7)
+### Distribution = partner portfolio (Assumptions §4)
 
 Channel is no longer Manatal-only. It's a toggleable portfolio — Manatal (live),
 Socium, other HR-tech/ATS players, staffing-firm networks, HR consultancies, system
@@ -42,19 +42,17 @@ integrators — each with its own client base, ICP-relevant share, and attach ra
 > blended net **$12.22/test**; no flat enterprise fee; 90% retention (BP base 93%).
 
 **Lead with the 3-year reachable number.** The single biggest assumption is the
-**Year-3 channel attach scalar** across the partner portfolio (Assumptions §7);
+**Year-3 channel attach scalar** across the partner portfolio (Assumptions §4);
 tests/account and the $14 base price are the next two swing factors (see Sensitivity).
 
 ## Workbook tabs
 
-1. **Cover** — objective, one-line answer, the three tiers, stream split, how-to-read.
-2. **Assumptions** — every driver as a single editable input (blue), grouped and
-   colour-coded; researched inputs carry a source key (col E) tied to Sources.
-3. **Build** — bottoms-up serviceable tier (entities × %fit × tests/yr × net $/test),
-   grossed up to the full opportunity, and the 3-year reachable tier via two routes side
-   by side (channel + direct), plus a value-delivered read (tests → hires → $150k cost-of-bad-hire).
-4. **Sensitivity** — two two-way tables and a tornado on the three inputs that move the
-   3-year number most: channel attach scalar, tests/account, base price.
+1. **Cover** — the three tiers, the 3-year breakdown, scenario levers, how-to-read.
+2. **Assumptions** — six short sections: buyers, breadth toggle, value per account,
+   channel portfolio, direct/reachability, talent-DB. Blue = input, black = formula.
+3. **Build** — serviceable today (buyers × %addressable × ACV), grossed up to the full
+   opportunity, the 3-year reachable tier (channel + direct), and the two-stream totals.
+4. **Sensitivity** — one tornado on the 3-year number: attach scalar, price, tests/account, direct penetration.
 5. **Sources** — one row per researched input with source, URL, date, confidence.
 
 ## Method
@@ -62,16 +60,14 @@ tests/account and the $14 base price are the next two swing factors (see Sensiti
 - **Segments (MECE):** (A) tech-focused recruiting agencies, (B) engineering-heavy
   in-house firms, (C) mid-size firms (50–250) with structured hiring. Agencies and
   the firms they serve are distinct buyers — no double count.
-- **Revenue engine:** usage-based. `tests/account/yr = roles hired × candidates
-  tested per role`. Net price per test comes from a pack mix (PAYG $14, Small −10%,
-  Medium −15%, Enterprise 1,000-pack −20%) blended to ~$12.22/test. All tiers are
-  per-test — no flat enterprise fee (matches the finalized BP).
+- **Value per account:** `ACV = tests/account/yr × net price/test`. One blended price
+  (~$12.22 = $14 PAYG less 10–20% pack discounts at the BP mix); tests/account is a single
+  input per segment (≈ roles × candidates).
 - **Breadth toggle:** a 1/2/3 mode scales each segment's universe by a documented
   multiplier (engineers → some white-collar → all white-collar).
 - **3-year reachable:** Channel = Σ over partner portfolio (clients × ICP-relevant share ×
-  attach × scalar) × ACV × retention. Direct = penetration of the serviceable tier (captures
-  that share of segment-weighted serviceable value), cross-checked against a traffic→trial→paid
-  funnel with deliberately low trial-to-paid.
+  attach × scalar) × ACV × retention. Direct = penetration of the serviceable tier
+  (captures that share of segment-weighted serviceable value).
 - **Second stream — talent-DB monetization:** for each tier,
   `DB revenue = tests run × % profiles sourced from own DB × $30/profile`
   (mature 30% used; finalized BP ramps 1%→50%). Total revenue potential =
