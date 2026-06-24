@@ -116,6 +116,8 @@ A.column_dimensions["C"].width = 14
 A.column_dimensions["D"].width = 12
 A.column_dimensions["E"].width = 10
 A.column_dimensions["F"].width = 52
+A.column_dimensions["G"].width = 12
+A.column_dimensions["H"].width = 7
 
 ref = {}   # name -> "Assumptions!$C$n"
 row = 1
@@ -192,6 +194,38 @@ for seg, lbl in [("AG","Agencies"),("TF","Eng-heavy firms"),("MS","Mid-size firm
     put(f"SUM_{seg}", f"   {lbl} - focus-6 total", f"=({cells})", "entities", NUM,
         "Sum across France, UK, UAE, Morocco, KSA, Egypt.", is_input=False)
 
+# ---- Market breadth toggle (scales the addressable universe) ----
+band(A, row, "1b. Market breadth toggle  (1=Engineers, 2=White-collar, 3=Narrower)"); row += 1
+put("BREADTH_MODE", "Active breadth mode (1 / 2 / 3)", 1, "mode", '0',
+    "1: tech/eng focus (current). 2: all structured white-collar hiring (Aida's broader view). 3: narrower high-conviction core.")
+put("BREADTH_NAME", "   Active breadth (label)",
+    f'=CHOOSE({ref["BREADTH_MODE"]},"1 Engineers only","2 White-collar hiring","3 Narrower use case")',
+    "", '@', "Driven by the toggle above.", is_input=False)
+# 3x3 multiplier matrix (segment x mode), written manually
+A.cell(row,2,"Breadth multiplier by segment").font=f_h2
+for j,t in [(3,"1 Eng"),(4,"2 White-collar"),(5,"3 Narrower")]:
+    A.cell(row,j,t).font=f_note; A.cell(row,j).alignment=center
+A.cell(row,6,"Logic").font=f_note
+row+=1
+breadth_rows={}
+for seg,lbl,m1,m2,m3,logic in [
+  ("AG","Agencies",1,7,1,"Tech agencies -> all recruitment agencies (tech ~10-15% of total)."),
+  ("TF","Eng-heavy firms",1,4,0.5,"Tech firms -> all firms with structured white-collar hiring."),
+  ("MS","Mid-size firms",1,3,0.2,"Eng-hiring mid-size -> all mid-size structured hirers (2) / core only (3)."),
+]:
+    A.cell(row,2,f"   {lbl}").font=f_label
+    for j,val in [(3,m1),(4,m2),(5,m3)]:
+        c=A.cell(row,j,val); c.font=f_input; c.fill=fill_inp; c.number_format='0.0'; c.alignment=right
+    A.cell(row,6,logic).font=f_note
+    breadth_rows[seg]=row
+    row+=1
+secrow(A, row, "Effective addressable entities (calc = subtotal x active breadth mult)"); row += 1
+for seg,lbl in [("AG","Agencies"),("TF","Eng-heavy firms"),("MS","Mid-size firms")]:
+    r=breadth_rows[seg]
+    mult=f"CHOOSE({ref['BREADTH_MODE']},$C${r},$D${r},$E${r})"
+    put(f"EFF_{seg}", f"   {lbl} - effective", f"={ref['SUM_'+seg]}*{mult}", "entities", NUM,
+        "Focus-6 subtotal x active breadth multiplier.", is_input=False)
+
 # ---- Section 2: use-case fit ----
 band(A, row, "2.  Share that fits the structured-evaluation use case"); row += 1
 put("FIT_AG", "Agencies - % fit use case", 0.55, "%", PCT,
@@ -260,20 +294,38 @@ for seg, lbl in [("AG","Agencies"),("TF","Eng-heavy firms"),("MS","Mid-size firm
         f"={tpa}*{ref['BLEND']}",
         "$/yr", USD, "tests/account x blended net price per test.", is_input=False)
 
-# ---- Section 7: channel route (Manatal) ----
-band(A, row, "7.  SOM - Channel route (Manatal embedded)  [anchor 10,000+]"); row += 1
-put("MAN_CLIENTS", "Manatal client base", 10000, "clients", NUM,
-    "Anchor: embedded in Manatal, 10,000+ clients / 100+ countries.", src="S8")
-put("MAN_TECH", "ICP-relevant share of Manatal base", 0.45, "%", PCT0,
-    "Manatal is a recruiter/agency ATS - most clients actively hire for roles Invirtus can assess.")
-put("ATT_Y1", "Attach rate - year 1", 0.02, "%", PCT,
-    "Share of relevant Manatal clients activating Invirtus. Embedded distribution, low early activation.")
-put("ATT_Y2", "Attach rate - year 2", 0.05, "%", PCT, "Ramp.")
-put("ATT_Y3", "Attach rate - year 3 (SOM)", 0.08, "%", PCT,
-    "BIGGEST SOM DRIVER. Realistic embedded-tool attach, not best-in-class.")
-put("SOCIUM_ON", "Include 2nd ATS (Socium) in base?  (1/0)", 0, "flag", '0',
-    "Held as UPSIDE until integration is real. Set 1 to include.", )
-put("SOCIUM_CLIENTS", "Socium client base (upside)", 3000, "clients", NUM, "Upside only.", src="S9")
+# ---- Section 7: channel route (partner distribution portfolio) ----
+band(A, row, "7.  SOM - Channel: partner distribution portfolio  [beyond Manatal]"); row += 1
+A.cell(row,2,"Partner  (set On=1 to include)").font=f_h2
+for j,t in [(3,"On 1/0"),(4,"Client base"),(5,"ICP-rel%"),(6,"Attach y3"),(7,"Accounts")]:
+    A.cell(row,j,t).font=f_note; A.cell(row,j).alignment=center
+row+=1
+partner_rows=[]
+PARTNERS=[
+  ("Manatal (ATS, live)",        1,10000,0.45,0.08,"S8"),
+  ("Socium (2nd ATS, exploring)",1, 3000,0.45,0.05,"S9"),
+  ("Other HR-tech / ATS players",1,15000,0.35,0.03,""),
+  ("Staffing-firm networks",     1, 5000,0.60,0.04,""),
+  ("HR consultancies",           1, 3000,0.50,0.04,""),
+  ("System integrators",         1, 2000,0.40,0.03,""),
+]
+for name,on,clients,rel,att,src in PARTNERS:
+    A.cell(row,2,name).font=f_label
+    for j,val,fmt in [(3,on,'0'),(4,clients,NUM),(5,rel,PCT0),(6,att,PCT)]:
+        c=A.cell(row,j,val); c.font=f_input; c.fill=fill_inp; c.number_format=fmt
+        c.alignment=center if j==3 else right
+    ac=A.cell(row,7,f"=C{row}*D{row}*E{row}*F{row}"); ac.font=f_calc; ac.number_format=NUM
+    if src: A.cell(row,5).value=A.cell(row,5).value  # keep
+    A.cell(row,8,src).font=f_note; A.cell(row,8).alignment=center
+    partner_rows.append(row)
+    row+=1
+A.cell(row,2,"Channel base accounts (portfolio, y3)").font=f_calcb
+ct=A.cell(row,7,f"=SUM(G{partner_rows[0]}:G{partner_rows[-1]})")
+ct.font=f_calcb; ct.number_format=NUM; ct.border=btop
+ref["CH_BASE_ACCTS"]=f"Assumptions!$G${row}"
+row+=1
+put("ATTACH_SCALAR", "Channel attach scalar (sensitivity handle)", 1.00, "x", '0.00',
+    "Global multiplier on all partner attach rates. Base=1.00; flex in sensitivity. (Channel tests/acct & ACV in secs 5-6.)")
 
 # ---- Section 8: direct route (self-serve + sales) ----
 band(A, row, "8.  SOM - Direct route (self-serve + sales-led)"); row += 1
@@ -343,7 +395,7 @@ br += 1
 seg_rows = {}
 for seg,lbl in [("AG","Tech recruiting agencies"),("TF","Engineering-heavy firms"),("MS","Mid-size structured-hiring firms")]:
     B.cell(br,2,lbl).font=f_label
-    B.cell(br,3,f"={ref['SUM_'+seg]}").number_format=NUM
+    B.cell(br,3,f"={ref['EFF_'+seg]}").number_format=NUM
     B.cell(br,4,f"={ref['FIT_'+seg]}").number_format=PCT
     B.cell(br,5,f"=C{br}*D{br}").number_format=NUM
     B.cell(br,6,f"={ref['TPA_'+seg]}").number_format=NUM
@@ -370,7 +422,7 @@ br+=1
 tam_rows={}
 for seg,lbl in [("AG","Tech recruiting agencies"),("TF","Engineering-heavy firms"),("MS","Mid-size structured-hiring firms")]:
     B.cell(br,2,lbl).font=f_label
-    B.cell(br,3,f"={ref['SUM_'+seg]}/{ref['GLOB_SHARE']}").number_format=NUM
+    B.cell(br,3,f"={ref['EFF_'+seg]}/{ref['GLOB_SHARE']}").number_format=NUM
     B.cell(br,4,f"={ref['FIT_'+seg]}").number_format=PCT
     B.cell(br,5,f"=C{br}*D{br}").number_format=NUM
     B.cell(br,6,f"={ref['ACV_'+seg]}").number_format=USD
@@ -386,33 +438,22 @@ br+=2
 # ---------- SOM channel + direct ----------
 bband(br, "C.  SOM  (3-year reachable)  -  two routes side by side"); br += 1
 c_start=br
-# headers: col B label, C Year1, D Year2, E Year3, then G/H direct
-B.cell(br,2,"CHANNEL ROUTE  (Manatal embedded)").font=f_h2
+B.cell(br,2,"CHANNEL ROUTE  (partner portfolio - see Assumptions sec.7)").font=f_h2
 B.cell(br,2).fill=fill_sec
-B.cell(br,3,"Year 1").font=f_h2; B.cell(br,4,"Year 2").font=f_h2; B.cell(br,5,"Year 3").font=f_h2
-for c in [3,4,5]: B.cell(br,c).fill=fill_sec; B.cell(br,c).alignment=center
+for c in [3,4,5]: B.cell(br,c).fill=fill_sec
 br+=1
-B.cell(br,2,"Relevant Manatal clients").font=f_label
-relexpr=f"({ref['MAN_CLIENTS']}+{ref['SOCIUM_ON']}*{ref['SOCIUM_CLIENTS']})*{ref['MAN_TECH']}"
-for c in [3,4,5]:
-    B.cell(br,c,f"={relexpr}").number_format=NUM; B.cell(br,c).font=f_calc
-CH_REL=br; br+=1
-B.cell(br,2,"Attach rate").font=f_label
-B.cell(br,3,f"={ref['ATT_Y1']}").number_format=PCT
-B.cell(br,4,f"={ref['ATT_Y2']}").number_format=PCT
-B.cell(br,5,f"={ref['ATT_Y3']}").number_format=PCT
-for c in [3,4,5]: B.cell(br,c).font=f_calc
-CH_ATT=br; br+=1
+B.cell(br,2,"Channel base accounts (portfolio, y3)").font=f_label
+B.cell(br,5,f"={ref['CH_BASE_ACCTS']}").number_format=NUM; B.cell(br,5).font=f_calc
+CH_BASE=br; br+=1
+B.cell(br,2,"Attach scalar").font=f_label
+B.cell(br,5,f"={ref['ATTACH_SCALAR']}").number_format='0.00'; B.cell(br,5).font=f_calc
+CH_SC=br; br+=1
 B.cell(br,2,"Active channel accounts").font=f_label
-for c in [3,4,5]:
-    B.cell(br,c,f"=C{CH_REL}*{get_column_letter(c)}{CH_ATT}").number_format=NUM
-    B.cell(br,c).font=f_calc
-    B.cell(br,c).value=f"={get_column_letter(c)}{CH_REL}*{get_column_letter(c)}{CH_ATT}"
+B.cell(br,5,f"=E{CH_BASE}*E{CH_SC}").number_format=NUM; B.cell(br,5).font=f_calc
 CH_ACCT=br; br+=1
 B.cell(br,2,"Channel revenue ($/yr, retention-adj)").font=f_calcb
-for c in [3,4,5]:
-    B.cell(br,c,f"={get_column_letter(c)}{CH_ACCT}*{ref['ACV_CH']}*{ref['RETENTION']}").number_format=USD
-    B.cell(br,c).font=f_calcb
+B.cell(br,5,f"=E{CH_ACCT}*{ref['ACV_CH']}*{ref['RETENTION']}").number_format=USD
+B.cell(br,5).font=f_calcb
 CH_REV=br; br+=2
 
 # Direct route block
@@ -547,19 +588,27 @@ C.cell(cr,3,f"={TOT_SOM}").number_format=USDM; C.cell(cr,3).font=f_calcb; cr+=2
 
 # 3-yr reachable assessments by route
 C.cell(cr,2,"3-yr reachable - assessments by route").font=f_h2; cr+=1
-C.cell(cr,2,"Channel (Manatal)").font=f_label
+C.cell(cr,2,"Channel (partner portfolio)").font=f_label
 C.cell(cr,3,f"={SOM_CH}").number_format=USDM; C.cell(cr,3).font=f_calcb; cr+=1
 C.cell(cr,2,"Direct (self-serve + sales)").font=f_label
 C.cell(cr,3,f"={SOM_DIR}").number_format=USDM; C.cell(cr,3).font=f_calcb; cr+=2
+
+# scenario levers (live indicators)
+C.cell(cr,2,"Scenario levers (edit on Assumptions)").font=f_h2; cr+=1
+C.cell(cr,2,"Market breadth mode").font=f_label
+C.cell(cr,3,f"={ref['BREADTH_NAME']}").font=f_calcb; cr+=1
+C.cell(cr,2,"Channel attach scalar").font=f_label
+C.cell(cr,3,f"={ref['ATTACH_SCALAR']}").number_format='0.00'; C.cell(cr,3).font=f_calcb; cr+=2
 
 # read-me / legend
 C.cell(cr,2,"How to read this model").font=f_h2; cr+=1
 for line in [
  "1.  Every blue cell on Assumptions is an editable input; black cells are formulas with no hardcodes.",
- "2.  Build derives SAM bottoms-up (entities x %fit x tests/yr x net $/test), grosses up to TAM, and",
- "     captures SOM via two real routes: the Manatal channel and direct self-serve/sales.",
- "3.  Sensitivity flexes the three inputs that move SOM most. Sources lists every researched figure.",
- "4.  Value-delivered read ties tests -> hires -> the $150k cost-of-bad-hire anchor.",
+ "2.  Market BREADTH toggle (1 Engineers / 2 White-collar / 3 Narrower) scales the universe; the",
+ "     headline above reflects the active mode. Channel is a partner PORTFOLIO (Manatal + others), each toggleable.",
+ "3.  Build derives Serviceable bottoms-up (entities x %fit x tests/yr x net $/test), grosses up to Full",
+ "     opportunity, and captures the 3-yr figure via the partner channel + direct self-serve/sales, two streams.",
+ "4.  Sensitivity flexes the inputs that move it most; Sources lists every researched figure.",
 ]:
     C.cell(cr,2,line).font=f_calc
     C.merge_cells(start_row=cr,start_column=2,end_row=cr,end_column=5)
@@ -594,15 +643,14 @@ def acv_of(tpa_expr, p):
     # ACV per acct: tests x blended net price (all per-test packs; no flat fee)
     return f"({tpa_expr}*{blended_of(p)})"
 
-def som_formula(p_cell, tpa_ch_cell, att_cell):
-    """SOM yr3 = channel + direct, parameterised by payg price, channel tests/acct, attach."""
-    rel=f"(({ref['MAN_CLIENTS']}+{ref['SOCIUM_ON']}*{ref['SOCIUM_CLIENTS']})*{ref['MAN_TECH']})"
-    chan=f"{rel}*{att_cell}*{acv_of(tpa_ch_cell,p_cell)}*{ref['RETENTION']}"
+def som_formula(p_cell, tpa_ch_cell, scalar_cell):
+    """SOM yr3 = channel + direct, parameterised by payg price, channel tests/acct, attach scalar."""
+    chan=f"{ref['CH_BASE_ACCTS']}*{scalar_cell}*{acv_of(tpa_ch_cell,p_cell)}*{ref['RETENTION']}"
     # direct: penetrate x% of the serviceable market => x% of SAM value (segment-weighted ACV under price p)
     parts=[]
     for s in ["AG","TF","MS"]:
         tpa_s = "(" + ref['ROLE_'+s] + "*" + ref['CAND_'+s] + "*" + ref['TSCALE'] + ")"
-        parts.append("(" + ref['SUM_'+s] + "*" + ref['FIT_'+s] + "*" + acv_of(tpa_s, p_cell) + ")")
+        parts.append("(" + ref['EFF_'+s] + "*" + ref['FIT_'+s] + "*" + acv_of(tpa_s, p_cell) + ")")
     sam_p="+".join(parts)
     direct=f"(({sam_p})*{ref['DIR_PEN_Y3']}*{ref['RETENTION']})"
     return f"={chan}+{direct}"
@@ -622,21 +670,21 @@ for i,t in enumerate(tpa_axis):
     for j,p in enumerate(price_axis):
         p_cell=f"{get_column_letter(3+j)}${hdr_r}"
         t_cell=f"$B{sr}"
-        S.cell(sr,3+j, som_formula(p_cell, t_cell, ref['ATT_Y3'])).number_format=USDM
+        S.cell(sr,3+j, som_formula(p_cell, t_cell, ref['ATTACH_SCALAR'])).number_format=USDM
         S.cell(sr,3+j).font=f_calc
     sr+=1
 sr+=1
 
 # ---- Table 2: Attach rate (rows) x Channel tests/acct (cols) ----
-S.cell(sr,2,"Table 2:  SOM (Yr3)  -  Channel attach rate  vs  Channel tests/account").font=f_h2; sr+=1
-att_axis=[0.04,0.06,0.08,0.10,0.12]
+S.cell(sr,2,"Table 2:  SOM (Yr3)  -  Channel attach scalar  vs  Channel tests/account").font=f_h2; sr+=1
+att_axis=[0.5,0.75,1.0,1.25,1.5]
 hdr2=sr
-S.cell(sr,2,"attach  \\  tests/acct").font=f_note
+S.cell(sr,2,"attach x  \\  tests/acct").font=f_note
 for j,t in enumerate(tpa_axis):
     cell=S.cell(sr,3+j,t); cell.font=f_input; cell.fill=fill_inp; cell.number_format=NUM; cell.alignment=center
 sr+=1
 for i,a in enumerate(att_axis):
-    S.cell(sr,2,a).font=f_input; S.cell(sr,2).fill=fill_inp; S.cell(sr,2).number_format=PCT
+    S.cell(sr,2,a).font=f_input; S.cell(sr,2).fill=fill_inp; S.cell(sr,2).number_format='0.00'
     for j,t in enumerate(tpa_axis):
         t_cell=f"{get_column_letter(3+j)}${hdr2}"
         a_cell=f"$B{sr}"
@@ -651,12 +699,12 @@ for i,h in enumerate(["Driver","Low case","Base","High case"]):
     cell=S.cell(sr,2+i,h); cell.font=f_h2; cell.fill=fill_sec; cell.alignment=center
 sr+=1
 # base attach/tests/price
-base_p=ref['P_PAYG']; base_att=ref['ATT_Y3']
+base_p=ref['P_PAYG']; base_att=ref['ATTACH_SCALAR']
 # Channel tests base = TPA_CH
 base_tpa=ref['TPA_CH']
 tornado=[
- ("Year-3 attach rate (0.04 / 0.08 / 0.12)",
-   som_formula(base_p, base_tpa, "0.04"), som_formula(base_p, base_tpa, base_att), som_formula(base_p, base_tpa, "0.12")),
+ ("Channel attach scalar (0.5 / 1.0 / 1.5)",
+   som_formula(base_p, base_tpa, "0.5"), som_formula(base_p, base_tpa, base_att), som_formula(base_p, base_tpa, "1.5")),
  ("Channel tests/account (100 / base / 300)",
    som_formula(base_p, "100", base_att), som_formula(base_p, base_tpa, base_att), som_formula(base_p, "300", base_att)),
  ("PAYG price/test ($10 / base $14 / $20)",

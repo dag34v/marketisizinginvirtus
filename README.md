@@ -5,19 +5,37 @@ SOM equivalents) from the count of target buyers × realistic usage-based revenu
 — **not** a top-down slice of a published HR-tech number. Two revenue streams:
 **assessment packs** + **talent-DB monetization**.
 
-## The answer (base case, USD)
+## The answer (base case = breadth mode 1 "Engineers", USD)
 
 | Tier | Assessments | + Talent-DB | **Total revenue potential** |
 |------|-------------|-------------|------------------------------|
 | **Full opportunity** (TAM) | ~$640M | ~$471M | **~$1.11B** |
 | **Serviceable today** (SAM) | ~$77M | ~$56M | **~$133M** |
-| **3-year reachable** (SOM) | ~$1.34M | ~$0.99M | **~$2.34M** |
+| **3-year reachable** (SOM) | ~$2.29M | ~$1.69M | **~$3.97M** |
 
 - **Full opportunity** — 3 buyer segments, all geos where the product works, full ACV.
 - **Serviceable today** — focus-6 geos (France, UK, UAE, Morocco, KSA, Egypt).
-- **3-year reachable** — **assessment line is channel-led (~59% Manatal / ~41% direct)**;
-  ties to the finalized BP (between its 2028 and 2029 test-pack revenue). Talent-DB
-  adds ~42% on top, consistent with the BP reaching ~45% DB revenue by 2030.
+- **3-year reachable** — **assessment line is channel-led (~76% partner channel / ~24% direct)**;
+  ties to the finalized BP. Talent-DB adds ~43% on top, consistent with the BP reaching
+  ~45% DB revenue by 2030.
+
+### Market-breadth toggle (Assumptions §1b)
+
+The addressable universe scales with a single toggle, so the same model serves the
+tech-only and broader-market views (addresses the "TAM seems low" feedback):
+
+| Mode | Full opportunity | Serviceable | 3-yr reachable |
+|------|------------------|-------------|----------------|
+| **1 — Engineers only** (current) | ~$1.11B | ~$133M | ~$3.97M |
+| **2 — White-collar hiring** | ~$4.98B | ~$597M | ~$7.31M |
+| **3 — Narrower core** | ~$0.64B | ~$76M | ~$3.56M |
+
+### Distribution = partner portfolio (Assumptions §7)
+
+Channel is no longer Manatal-only. It's a toggleable portfolio — Manatal (live),
+Socium, other HR-tech/ATS players, staffing-firm networks, HR consultancies, system
+integrators — each with its own client base, ICP-relevant share, and attach rate
+(~789 base accounts at year 3). A global attach scalar drives sensitivity.
 
 > Pricing aligned to Aida's **finalized, pack-led business plan**: $14 base/test;
 > packs PAYG / Small (20, −10%) / Medium (100, −15%) / **Enterprise (1,000, −20% = $11,200)**;
@@ -48,9 +66,11 @@ $15 PAYG price are the next two swing factors (see Sensitivity).
   tested per role`. Net price per test comes from a pack mix (PAYG $14, Small −10%,
   Medium −15%, Enterprise 1,000-pack −20%) blended to ~$12.22/test. All tiers are
   per-test — no flat enterprise fee (matches the finalized BP).
-- **SOM:** Channel = Manatal 10,000+ clients × ICP-relevant share × attach rate ×
-  ACV × retention. Direct = penetration of the serviceable SAM (captures that share
-  of segment-weighted SAM value), cross-checked against a traffic→trial→paid funnel
+- **Breadth toggle:** a 1/2/3 mode scales each segment's universe by a documented
+  multiplier (engineers → white-collar → narrower core).
+- **SOM:** Channel = Σ over partner portfolio (clients × ICP-relevant share × attach ×
+  scalar) × ACV × retention. Direct = penetration of the serviceable SAM (captures that
+  share of segment-weighted SAM value), cross-checked against a traffic→trial→paid funnel
   with deliberately low trial-to-paid.
 - **Second stream — talent-DB monetization:** for each tier,
   `DB revenue = tests run × % profiles sourced from own DB × $30/profile`
